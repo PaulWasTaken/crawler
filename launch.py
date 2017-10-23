@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/paul/Рабочий стол/pressindex_test")
+sys.path.append("/home/idk/crawler/crawler")
 
 import click
 import os
@@ -18,7 +18,7 @@ logger = get_logger(__file__)
 @click.argument("url", required=True)
 @click.option("--depth", default=1)
 @click.option("-n", default=1)
-@click.option("--timeout", default=10)
+@click.option("--timeout", default=60)
 def run(command, url, **kwargs):
     if not os.path.exists(str(config.DB)):
         logger.debug("Database was not found. Creating...")

@@ -1,4 +1,7 @@
-from aiohttp import ClientConnectorSSLError
+try:
+    from aiohttp import ClientConnectorSSLError as ssl_error
+except ImportError:
+    from aiohttp import ClientConnectorError as ssl_error
 from config.log import get_logger
 from lxml import html
 from sys import exc_info
@@ -14,10 +17,12 @@ def error_processor(url):
     type_ = error[0]
     if type_ is AssertionError:
         logger.error("Request for %s returned non 200 code." % url)
-    elif type_ is ClientConnectorSSLError:
+    elif type_ is ssl_error:
         logger.warning("Could not establish ssl connection with %s" % url)
     elif type_ is UnwantedContentType:
         logger.warning("%s is not html file." % url)
+    elif type_ is IndexError:
+        logger.error("No title for ulr %s" % url)
     else:
         logger.error("Got unknown exception: %s" % error[1])
 
@@ -49,4 +54,4 @@ def exception_handler(loop, context):
         if "message" in context else ""
     exception = "Exception: %s." % context.get("exception", None) \
         if "exception" in context else ""
-    logging.error("Error occurred. " + msg + exception)
+    logger.error("Error occurred. " + msg + exception)

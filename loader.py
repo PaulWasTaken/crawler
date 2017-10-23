@@ -1,3 +1,5 @@
+import config
+
 from aiohttp import ClientSession, TCPConnector
 from asyncio import ensure_future, gather
 from collections import namedtuple
@@ -22,7 +24,7 @@ async def load_urls(urls, **kwargs):
     timeout = kwargs.get("timeout")
     depth = kwargs.get("depth")
     visited_urls = set()
-    con = TCPConnector(limit=1000, verify_ssl=False)
+    con = TCPConnector(limit=1000, verify_ssl=config.VERIFY_SSL)
     async with ClientSession(connector=con, conn_timeout=timeout) \
             as session:
         while depth >= 0:
