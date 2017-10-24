@@ -17,6 +17,10 @@ class Extractor(AbstractWorker):
         query = session.query(UrlData.url, UrlData.title) \
             .filter(UrlData.source_url_hash == get_url_hash(self.source_url)) \
             .limit(self.amount)
-        for url, title in query.all():
-            print("%s: '%s'" % (url, title))
+        records = query.all()
+        if records:
+            for url, title in records:
+                print("%s: '%s'" % (url, title))
+        else:
+            print("No data associated with url %s" % self.source_url)
         session.close()

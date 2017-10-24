@@ -5,7 +5,7 @@ from sql.sqla import sa
 logger = get_logger(__file__)
 
 
-class Collector:
+class Storage:
     def __init__(self):
         self.content = []
         self.url_data = []
@@ -20,7 +20,9 @@ class Collector:
         self.content.append(content)
         self.url_data.append(url_record)
 
-    def write(self):
+    def flush(self):
         with get_engine().connect() as conn:
             conn.execute(sa.replace(UrlData).values(self.url_data))
             conn.execute(sa.replace(Content).values(self.content))
+        self.content = []
+        self.url_data = []

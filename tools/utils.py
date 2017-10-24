@@ -15,9 +15,10 @@ logger = get_logger(__file__)
 ResultInfo = namedtuple("ResultInfo", "url title links content")
 
 
-async def process_url(url, session, extract_links):
+async def process_url(sem, url, session, extract_links):
     try:
-        content = await fetch(url, session)
+        async with sem:
+            content = await fetch(url, session)
         title, links = await process_response(content, extract_links)
         logger.debug("Got %s links for url %s" % (len(links), url))
         return ResultInfo(url, title, links, content)
@@ -44,9 +45,9 @@ async def fetch(url, session):
     async with session.get(url) as response:
         if response.status != 200:
             raise BadReturnCode
-        if response.content_type == "text/html":
-            return await response.text()
-        raise UnwantedContentType
+        if response.content_type != "text/html":
+            raise UnwantedContentType
+        return await response.text()
 
 
 async def process_response(content, extract_links):

@@ -6,7 +6,7 @@ def get_engine():
     return create_engine("sqlite:///%s" % config.DB, echo=False)
 
 
-def create():
+def create_db():
     from sql.models import Base
 
     engine = get_engine()
