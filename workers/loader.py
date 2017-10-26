@@ -3,8 +3,7 @@ import config
 from aiohttp import ClientSession, TCPConnector
 from asyncio import ensure_future, gather, get_event_loop, Semaphore
 from config.log import get_logger
-from tools.utils import form_content_record, form_url_record, process_url, \
-    loop_exception_handler
+from tools.utils import process_url, loop_exception_handler
 from workers.abstract_worker import AbstractWorker
 from workers.storage import Storage
 
@@ -15,7 +14,7 @@ class Loader(AbstractWorker):
     def __init__(self, source_url, loop=None, **kwargs):
         self.source_url = source_url
         self.current_urls = {source_url}
-        self.storage = Storage()
+        self.storage = Storage(source_url)
         self.timeout = kwargs.get("timeout")
         self.depth = kwargs.get("depth")
         self.visited_urls = set()
@@ -40,23 +39,23 @@ class Loader(AbstractWorker):
                 as session:
             while self.depth >= 0:
                 tasks = []
-                for url in self.current_urls - self.visited_urls:
+                urls = self.current_urls - self.visited_urls
+                logger.debug("Got %s at %s run." % (len(urls), self.depth))
+                for url in urls:
                     self.visited_urls.add(url)
                     tasks.append(ensure_future(
-                        process_url(sem, url, session, self.depth != 0)))
+                        process_url(sem, self.storage,
+                                    url, session, self.depth != 0)))
 
-                res = await gather(*tasks)
+                links = await gather(*tasks)
 
-                self.update_state(res)
+                self.update_state(links)
 
-    def update_state(self, res):
-        self.current_urls = set()
-        for elem in res:
-            if elem:
-                self.current_urls |= elem.links
-                content_record = form_content_record(elem.url, elem.content)
-                url_record = form_url_record(
-                    self.source_url, elem.url, elem.title)
-                self.storage.add(url_record, content_record)
-        self.depth -= 1
         self.storage.flush()
+
+    def update_state(self, links):
+        self.current_urls = set()
+        for elem in links:
+            if elem:
+                self.current_urls |= elem
+        self.depth -= 1

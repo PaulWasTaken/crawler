@@ -1,28 +1,40 @@
+import config
+
 from config.log import get_logger
 from sql.creator import get_engine
 from sql.models import UrlData, Content
 from sql.sqla import sa
+from tools.utils import form_content_record, form_url_record
+
 logger = get_logger(__file__)
 
 
 class Storage:
-    def __init__(self):
+    def __init__(self, source_url):
+        self.source_url = source_url
         self.content = []
         self.url_data = []
+        self.size = 0
+        self.threshold = config.STORAGE_THRESHOLD
 
-    def add(self, url_record, content):
-        assert isinstance(url_record, dict) and isinstance(content, dict)
-        for key, value in url_record.items():
-            if value is None:
-                logger.error("Got empty %s for %s" %
-                             (str(key), url_record.get("url")))
-                return
-        self.content.append(content)
+    def add(self, elem):
+        content_record = form_content_record(elem.url, elem.content)
+        url_record = form_url_record(self.source_url, elem.url, elem.title)
+        self.content.append(content_record)
+        self.size += len(elem.content)
         self.url_data.append(url_record)
+
+        self.check_state()
+
+    def check_state(self):
+        if self.size > self.threshold:
+            self.flush()
+            logger.debug("Successfully flushed storage.")
 
     def flush(self):
         with get_engine().connect() as conn:
             conn.execute(sa.replace(UrlData).values(self.url_data))
             conn.execute(sa.replace(Content).values(self.content))
-        self.content = []
-        self.url_data = []
+        self.content.clear()
+        self.size = 0
+        self.url_data.clear()

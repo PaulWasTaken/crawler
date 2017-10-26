@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("/home/paul/Рабочий стол/pressindex_test")
 
 import click
@@ -11,6 +12,7 @@ from resource import getrusage, RUSAGE_SELF
 from sql.creator import create_db
 from timeit import default_timer
 from workers.abstract_worker import AbstractWorker
+
 logger = get_logger(__file__)
 
 
@@ -35,7 +37,7 @@ def run(fabric, url, **kwargs):
     worker.run()
     print("ok, execution time: %.2f, peak memory usage: %s Mb" %
           (default_timer() - start_time,
-          getrusage(RUSAGE_SELF).ru_maxrss / 1000))
+           getrusage(RUSAGE_SELF).ru_maxrss / 1000))
 
 
 if __name__ == '__main__':

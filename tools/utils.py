@@ -3,25 +3,24 @@ try:
 except ImportError:
     from aiohttp import ClientConnectorError as SslError
 from collections import namedtuple
-from hashlib import md5
-from sys import exc_info
-
-from lxml import html
-
 from config.log import get_logger
+from hashlib import md5
+from lxml import html
+from sys import exc_info
 from tools.exceptions import UnwantedContentType, BadReturnCode
 
 logger = get_logger(__file__)
-ResultInfo = namedtuple("ResultInfo", "url title links content")
+ResultInfo = namedtuple("ResultInfo", "url title content")
 
 
-async def process_url(sem, url, session, extract_links):
+async def process_url(sem, storage, url, session, extract_links):
     try:
         async with sem:
+            logger.debug("Downloading url %s" % url)
             content = await fetch(url, session)
-        title, links = await process_response(content, extract_links)
-        logger.debug("Got %s links for url %s" % (len(links), url))
-        return ResultInfo(url, title, links, content)
+        title, links = process_response(content, extract_links)
+        storage.add(ResultInfo(url, title, content))
+        return links
     except Exception:
         error_processor(url)
 
@@ -50,7 +49,7 @@ async def fetch(url, session):
         return await response.text()
 
 
-async def process_response(content, extract_links):
+def process_response(content, extract_links):
     html_obj = html.fromstring(content)
 
     title = html_obj.xpath('//title')[0].text
@@ -88,8 +87,8 @@ def get_url_hash(url):
 
 
 def loop_exception_handler(loop, context):
-    msg = "Message: %s. " % context.get("message", None) \
+    msg = "Message: %s. " % context.get("message") \
         if "message" in context else ""
-    exception = "Exception: %s." % context.get("exception", None) \
+    exception = "Exception: %s." % context.get("exception") \
         if "exception" in context else ""
     logger.error("Error occurred. " + msg + exception)
