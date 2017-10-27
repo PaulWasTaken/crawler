@@ -10,12 +10,12 @@ logger = get_logger(__file__)
 
 
 class Storage:
-    def __init__(self, source_url):
+    def __init__(self, source_url, threshold):
         self.source_url = source_url
         self.content = []
         self.url_data = []
         self.size = 0
-        self.threshold = config.STORAGE_THRESHOLD
+        self.threshold = threshold
 
     def add(self, elem):
         content_record = form_content_record(elem.url, elem.content)
@@ -24,12 +24,8 @@ class Storage:
         self.size += len(elem.content)
         self.url_data.append(url_record)
 
-        self.check_state()
-
-    def check_state(self):
         if self.size > self.threshold:
             self.flush()
-            logger.debug("Successfully flushed storage.")
 
     def flush(self):
         with get_engine().connect() as conn:
@@ -38,3 +34,4 @@ class Storage:
         self.content.clear()
         self.size = 0
         self.url_data.clear()
+        logger.debug("Storage has been successfully flushed .")

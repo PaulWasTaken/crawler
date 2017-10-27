@@ -11,14 +11,16 @@ logger = get_logger(__file__)
 
 
 class Loader(AbstractWorker):
-    def __init__(self, source_url, loop=None, **kwargs):
+    def __init__(self, source_url, **kwargs):
         self.source_url = source_url
         self.current_urls = {source_url}
-        self.storage = Storage(source_url)
+        self.storage = Storage(source_url, kwargs.get('size'))
         self.timeout = kwargs.get("timeout")
         self.depth = kwargs.get("depth")
         self.visited_urls = set()
+        self.verify_ssl = kwargs.get('ssl')
 
+        loop = kwargs.get('loop')
         if loop is None:
             self.loop = get_event_loop()
             self.loop.set_exception_handler(loop_exception_handler)
@@ -33,14 +35,14 @@ class Loader(AbstractWorker):
             self.loop.close()
 
     async def load_urls(self):
-        con = TCPConnector(verify_ssl=config.VERIFY_SSL)
+        con = TCPConnector(verify_ssl=self.verify_ssl)
         sem = Semaphore(100)
         async with ClientSession(connector=con, conn_timeout=self.timeout) \
                 as session:
             while self.depth >= 0:
                 tasks = []
                 urls = self.current_urls - self.visited_urls
-                logger.debug("Got %s at %s run." % (len(urls), self.depth))
+                logger.debug("Got %s url(s) to load." % len(urls))
                 for url in urls:
                     self.visited_urls.add(url)
                     tasks.append(ensure_future(

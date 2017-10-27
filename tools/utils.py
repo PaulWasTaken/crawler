@@ -16,8 +16,9 @@ ResultInfo = namedtuple("ResultInfo", "url title content")
 async def process_url(sem, storage, url, session, extract_links):
     try:
         async with sem:
-            logger.debug("Downloading url %s" % url)
+            logger.debug("Downloading url %s." % url)
             content = await fetch(url, session)
+            logger.debug("Url %s has been downloaded." % url)
         title, links = process_response(content, extract_links)
         storage.add(ResultInfo(url, title, content))
         return links
@@ -31,13 +32,13 @@ def error_processor(url):
     if type_ is BadReturnCode:
         logger.error("Request for %s returned non 200 code." % url)
     elif type_ is SslError:
-        logger.warning("Could not establish ssl connection with %s" % url)
+        logger.warning("Could not establish ssl connection with %s." % url)
     elif type_ is UnwantedContentType:
         logger.warning("%s is not html file." % url)
     elif type_ is IndexError:
-        logger.error("No title for url %s" % url)
+        logger.error("No title for url %s." % url)
     else:
-        logger.error("Got unknown exception: %s %s" % (type_, error[1]))
+        logger.error("Got unknown exception: %s %s." % (type_, error[1]))
 
 
 async def fetch(url, session):

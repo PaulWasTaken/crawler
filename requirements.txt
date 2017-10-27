@@ -1,0 +1,7 @@
+lxml
+sqlalchemy
+py
+click
+aiohttp
+aiodns
+cchardet
