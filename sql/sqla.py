@@ -13,7 +13,7 @@ class Replace(expression.Insert):
 sa.replace = public_factory(Replace, ".expression.replace")
 
 
-@compiles(Replace, 'sqlite', 'mysql')
+@compiles(Replace, 'sqlite')
 def compile_replace(replace, compiler, **kw):
     stmt = compiler.sql_compiler.visit_insert(replace)
     return sub(r'^INSERT', 'INSERT OR REPLACE', stmt)

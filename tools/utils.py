@@ -20,24 +20,23 @@ async def process_url(sem, storage, url, session, extract_links):
     while retries > 0:
         try:
             async with sem:
-                logger.debug("Downloading url %s." % url)
                 content = await fetch(url, session)
-                logger.debug("Url %s has been downloaded." % url)
             title, links = process_response(content, extract_links)
             storage.add(ResultInfo(url, title, content))
             return links
         except (ServerDisconnectedError, Retry):
             logger.debug("Retrying for %s." % url)
             retries -= 1
-            pass
         except Exception:
             error_processor(url)
             break
 
 
 EXCEPTION_LOGINFO = {
-    BadReturnCode: LogInfo(logger.debug, "Request for {} returned non 200 code."),
-    SslError: LogInfo(logger.warning, "Could not establish ssl connection with {}."),
+    BadReturnCode: LogInfo(logger.debug,
+                           "Request for {} returned non 200 code."),
+    SslError: LogInfo(logger.warning,
+                      "Could not establish ssl connection with {}."),
     UnwantedContentType: LogInfo(logger.debug, "{} is not html file."),
     IndexError: LogInfo(logger.debug, "No title for url {}."),
     ServerTimeoutError: LogInfo(logger.debug, "No content from {}.")

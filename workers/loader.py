@@ -1,17 +1,17 @@
-import config
-
 from aiohttp import ClientSession, TCPConnector
 from asyncio import ensure_future, gather, get_event_loop, Semaphore
 from config.log import get_logger
+from tools.storage import Storage
 from tools.utils import process_url, loop_exception_handler
 from workers.abstract_worker import AbstractWorker
-from workers.storage import Storage
 
 logger = get_logger(__file__)
 
 
 class Loader(AbstractWorker):
     def __init__(self, source_url, **kwargs):
+        if not source_url.startswith(('http://', 'https://')):
+            source_url = 'http://' + source_url
         self.source_url = source_url
         self.current_urls = {source_url}
         self.storage = Storage(source_url, kwargs.get('size'))

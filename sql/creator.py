@@ -12,9 +12,3 @@ def create_db():
     engine = get_engine()
 
     Base.metadata.create_all(engine)
-
-
-def get_session():
-    from sqlalchemy.orm import sessionmaker
-    session = sessionmaker(bind=get_engine())
-    return session()

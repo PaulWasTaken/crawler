@@ -16,3 +16,7 @@ Type `python launch.py [command] [url] <options>`
 - `--timeout` - sets timeout in seconds on loading process. __Default__: 90
 - `--ssl` - if sets, then ssl check will be performed.
 - `--size` - sets storage size in bytes. __Default__: 10000000 (10 Mb)
+- Loglevel can be changed in config/log.py (LOGLEVEL).
+### Notes.
+* `www.` prefix is important. `www.google.com != google.com`.
+* If url has no schema, `http://` will be used.

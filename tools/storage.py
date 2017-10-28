@@ -1,5 +1,3 @@
-import config
-
 from config.log import get_logger
 from sql.creator import get_engine
 from sql.models import UrlData, Content
