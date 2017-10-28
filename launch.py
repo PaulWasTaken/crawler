@@ -17,7 +17,7 @@ logger = get_logger(__file__, SIMPLE)
 @click.argument("url", required=True)
 @click.option("--depth", default=1, type=int)
 @click.option("-n", default=1, type=int)
-@click.option("--timeout", default=30, type=int)
+@click.option("--timeout", default=90, type=int)
 @click.option("--ssl", default=config.VERIFY_SSL, is_flag=True)
 @click.option("--size", default=config.STORAGE_THRESHOLD, type=int)
 def run(fabric, url, **kwargs):

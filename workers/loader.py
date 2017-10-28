@@ -42,7 +42,7 @@ class Loader(AbstractWorker):
             while self.depth >= 0:
                 tasks = []
                 urls = self.current_urls - self.visited_urls
-                logger.debug("Got %s url(s) to load." % len(urls))
+                logger.debug("Got %s url(s) to download." % len(urls))
                 for url in urls:
                     self.visited_urls.add(url)
                     tasks.append(ensure_future(

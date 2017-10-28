@@ -13,6 +13,6 @@ Type `python launch.py [command] [url] <options>`
 2. `get` - to get associated urls.
    - `-n` - sets amount of urls to be loaded out of db. Negative value is used to get all urls. __Default__: 1
 ### Options.
-- `--timeout` - sets timeout in seconds on loading process. __Default__: 30
+- `--timeout` - sets timeout in seconds on loading process. __Default__: 90
 - `--ssl` - if sets, then ssl check will be performed.
 - `--size` - sets storage size in bytes. __Default__: 10000000 (10 Mb)
